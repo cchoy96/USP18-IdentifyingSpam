@@ -15,9 +15,11 @@ app = flask.Flask(__name__)
 def index():
     if 'credentials' not in flask.session:
         return flask.redirect(flask.url_for('oauth2callback'))
+
     credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
     if credentials.access_token_expired:
         return flask.redirect(flask.url_for('oauth2callback'))
+
     else:
         http_auth = credentials.authorize(httplib2.Http())
         gmail_service = discovery.build('gmail', 'v1', http_auth)
@@ -38,7 +40,10 @@ def oauth2callback():
     else:
         auth_code = flask.request.args.get('code')
         credentials = flow.step2_exchange(auth_code)
+        print 'HERE4'
+        print flask.session
         flask.session['credentials'] = credentials.to_json()
+        print 'HERE5'
         return flask.redirect(flask.url_for('index'))
 
 @app.route('/getmail')
@@ -83,6 +88,7 @@ def getmail():
 
 
 if __name__ == '__main__':
+    print 'MAIN'
     import uuid
     app.secret_key = str(uuid.uuid4())
     app.debug = True
